@@ -97,36 +97,36 @@ var numOfVertices: Int = 0
 var startingVertex: Int = 0
 var destinationA: Int = 0
 var destinationB: Int = 0
-var adjacencyList: [[(Int, Int)]] = [[(Int, Int)]()]
+var adjacencyList = Array(repeating: [(Int, Int)](), count: 201)
+var costs = Array(repeating: Array(repeating: INF, count: 201), count: 3)
 
 func solution(_ n:Int, _ s:Int, _ a:Int, _ b:Int, _ fares:[[Int]]) -> Int {
     numOfVertices = n
     startingVertex = s
     destinationA = a
     destinationB = b
-    adjacencyList = Array(repeating: [(Int, Int)](), count: numOfVertices + 1)
     
     for fare in fares {
         adjacencyList[fare[0]].append((fare[1], fare[2]))
         adjacencyList[fare[1]].append((fare[0], fare[2]))
     }
     
-    // 같이갈곳까지 Dijkstra 구하기
-    var totalCost = dijkstra(starting: startingVertex)
-    // 나눠서갈때 요금위해 Dijkstra
-    for from in 1...numOfVertices {
-        let cost = dijkstra(starting: from)
-        totalCost[from] = totalCost[from] + cost[destinationA] + cost[destinationB]
+    dijkstra(indexForCosts: 0, starting: startingVertex)
+    dijkstra(indexForCosts: 1, starting: destinationA)
+    dijkstra(indexForCosts: 2, starting: destinationB)
+    
+    var minCost = INF
+    for i in 1...numOfVertices {
+        if costs[0][i] + costs[1][i] + costs[2][i] < minCost {
+            minCost = costs[0][i] + costs[1][i] + costs[2][i]
+        }
     }
-    // 더했을 때 가장 작은 값 찾아서 반환해주기
-    let minCost = totalCost.min()!
     
     return minCost
 }
 
-func dijkstra(starting from: Int) -> [Int] {
-    var costs = Array(repeating: INF, count: numOfVertices + 1)
-    costs[from] = 0
+func dijkstra(indexForCosts: Int, starting from: Int) {
+    costs[indexForCosts][from] = 0
     
     var edgeQueue = PriorityQueue<EdgeData>(heap: [], priority: <)
     edgeQueue.enqueue(EdgeData(to: from, cost: 0))
@@ -136,17 +136,16 @@ func dijkstra(starting from: Int) -> [Int] {
         let currentTo = currentEdge.to
         let crrentCost = currentEdge.cost
         
-        if costs[currentTo] < crrentCost {
+        if costs[indexForCosts][currentTo] < crrentCost {
             continue
         }
         
         for next in adjacencyList[currentTo] {
-            let nextCost = next.1  + costs[currentTo]
-            if nextCost < costs[next.0]  {
-                costs[next.0] = nextCost
+            let nextCost = next.1  + costs[indexForCosts][currentTo]
+            if nextCost < costs[indexForCosts][next.0]  {
+                costs[indexForCosts][next.0] = nextCost
                 edgeQueue.enqueue(EdgeData(to: next.0, cost: nextCost))
             }
         }
     }
-    return costs
 }
