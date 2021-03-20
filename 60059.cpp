@@ -26,10 +26,6 @@ bool solution(vector<vector<int>> key, vector<vector<int>> lock) {
     width = lockWidth + 2 * (keyWidth - 1);
     
     rotatedKey = keyMatrix;
-    rotateKey();
-    rotateKey();
-    rotateKey();
-    
     buildBoard();
     
     for(int i = 0; i < lockWidth + keyWidth - 1; i++) {
