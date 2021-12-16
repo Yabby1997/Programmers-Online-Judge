@@ -31,82 +31,20 @@ struct Position {
     let cost: Int
 }
 
-struct PriorityQueue<T> {
-    var heap : [T] = []
-    let getPriority : (T, T) ->  Bool
+struct Queue<T> {
+    private var elements: [T]
+    var isEmpty: Bool { self.elements.isEmpty }
     
-    init(elements: [T], getPriority: @escaping (T, T) -> Bool) {
-        self.heap = elements
-        self.getPriority = getPriority
-        buildHeap()
-    }
-    
-    func getLeftChildIndex(of index: Int) -> Int {
-        return index * 2  + 1
-    }
-    
-    func getRightChildIndex(of index: Int) -> Int {
-        return index * 2 + 2
-    }
-    
-    func getParentIndex(of index: Int) -> Int {
-        return (index - 1) / 2
+    init(elements: [T] = []) {
+        self.elements = elements    
     }
     
     mutating func enqueue(_ element: T) {
-        heap.append(element)
-        var currentIndex = heap.count - 1
-        while currentIndex != 0 {
-            let parentIndex = getParentIndex(of: currentIndex)
-            if getPriority(heap[currentIndex], heap[parentIndex]) {
-                heap.swapAt(currentIndex, parentIndex)
-                currentIndex = parentIndex
-            }
-            else {
-                break
-            }
-        }
+        self.elements.append(element)
     }
     
     mutating func dequeue() -> T? {
-        if heap.count == 0 {
-            return nil
-        } else {
-            let target = heap[0]
-            let last = heap.popLast()
-            if heap.count != 0 {
-                heap[0] = last!
-                heapify(at: 0)
-            }
-            return target
-        }
-    }
-    
-    mutating func heapify(at index: Int) {
-        let left = getLeftChildIndex(of: index)
-        let right = getRightChildIndex(of: index)
-        var target = right
-        if right < heap.count {
-            if getPriority(heap[left], heap[right]) {
-                target = left
-            }
-        } else if left < heap.count {
-            target = left
-        } else {
-            return
-        }
-        if getPriority(heap[target], heap[index]) {
-            heap.swapAt(index, target)
-            heapify(at: target)
-        } else {
-            return
-        }
-    }
-    
-    mutating func buildHeap() {
-        for eachParent in (0 ..< heap.count / 2).reversed() {
-            heapify(at: eachParent)
-        }
+        return self.isEmpty ? nil : self.elements.removeFirst()
     }
 }
 
@@ -114,9 +52,7 @@ func solution(_ board:[[Int]]) -> Int {
     let n = board[0].count
     let boardRange = 0..<n
     var costBoard = Array(repeating: Array(repeating: Array(repeating: infinity, count: 4), count: n), count: n)
-    var positionQueue = PriorityQueue<Position>(elements: [Position(row: 0, col: 0, laidDirection: .right, cost: 0), Position(row: 0, col: 1, laidDirection: .left, cost: 0)]) {
-        $0.cost < $1.cost
-    }
+    var positionQueue = Queue<Position>(elements: [Position(row: 0, col: 0, laidDirection: .right, cost: 0), Position(row: 0, col: 1, laidDirection: .left, cost: 0)])
     
     costBoard[0][0][1] = 0
     costBoard[0][1][0] = 0
@@ -178,4 +114,3 @@ func solution(_ board:[[Int]]) -> Int {
     
     return costBoard[n - 1][n - 1].min { $0 < $1 } ?? -1
 }
-
