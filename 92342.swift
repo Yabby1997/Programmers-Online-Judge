@@ -5,7 +5,7 @@ struct Shot {
     let count: Int
 }
 
-func getCombination(_ elements: [Shot], _ count: Int) -> [[Int]] {
+func getPossibileShotCombinations(_ elements: [Shot], _ count: Int) -> [[Int]] {
     var results: [[Int]] = []
     
     func combinateRecursively(_ index: Int = 0, _ currentCombination: [Shot] = [], _ remaining: Int = count) {
@@ -30,16 +30,13 @@ func calcScoreGap(_ a: [Int], _ r: [Int]) -> Int {
 }
 
 func solution(_ n:Int, _ info:[Int]) -> [Int] {
-    let combined = getCombination(info.enumerated().map { Shot(index: $0.0, count: $0.1) }, n)
-    
-    let sorted = combined.sorted { leftCandidate, rightCandidate in
+    guard let minimumCombination = (getPossibileShotCombinations(info.enumerated().map { Shot(index: $0.0, count: $0.1) }, n).min { leftCandidate, rightCandidate in
         let leftCandidateScoreGap = calcScoreGap(info, leftCandidate)
         let rightCandidateScoreGap = calcScoreGap(info, rightCandidate)
         let leftCandidateLowerScoreIndex = leftCandidate.enumerated().filter { $0.1 >= 1 }.min { $0.0 > $1.0 }!.0
         let rightCandidateLowerScoreIndex = rightCandidate.enumerated().filter { $0.1 >= 1 }.min { $0.0 > $1.0 }!.0
         return leftCandidateScoreGap > rightCandidateScoreGap || ((leftCandidateScoreGap == rightCandidateScoreGap) && (leftCandidateLowerScoreIndex > rightCandidateLowerScoreIndex))
-    }
-
-    if calcScoreGap(info, sorted[0]) <= 0 { return [-1] }
-    return sorted[0]
+    }), calcScoreGap(info, minimumCombination) > 0 else { return [-1] }
+    
+    return minimumCombination
 }
